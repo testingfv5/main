@@ -7,10 +7,8 @@ import {
   CalendarIcon,
   PhotoIcon,
   PencilIcon,
-  TrashIcon,
-  EyeIcon
+  TrashIcon
 } from '@heroicons/react/24/outline';
-import Calendar from 'react-calendar';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import toast from 'react-hot-toast';

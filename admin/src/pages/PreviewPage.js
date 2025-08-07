@@ -6,7 +6,6 @@ import {
   ArrowPathIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -28,7 +27,11 @@ const PreviewPage = () => {
     // Force iframe reload by changing src
     const iframe = document.getElementById('preview-iframe');
     if (iframe) {
-      iframe.src = iframe.src;
+      const currentSrc = iframe.src;
+      iframe.src = '';
+      setTimeout(() => {
+        iframe.src = currentSrc;
+      }, 100);
     }
     toast.success('Vista previa actualizada');
   };

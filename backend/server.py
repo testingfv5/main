@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -28,8 +29,38 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI app"""
+    # Startup
+    logger.info("Starting Óptica Villalba API...")
+    
+    # Initialize auth service with database
+    from auth import set_database
+    set_database(db)
+    
+    # Start the promotion scheduler
+    await start_scheduler(db)
+    
+    logger.info("API startup complete")
+    
+    yield
+    
+    # Shutdown
+    from scheduler import stop_scheduler
+    await stop_scheduler()
+    client.close()
+    logger.info("API shutdown complete")
+
 # Create the main app without a prefix
-app = FastAPI(title="Óptica Villalba API", version="1.0.0")
+app = FastAPI(title="Óptica Villalba API", version="1.0.0", lifespan=lifespan)
 
 # Create a router with the /api prefix for existing endpoints
 api_router = APIRouter(prefix="/api")
@@ -82,31 +113,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup"""
-    logger.info("Starting Óptica Villalba API...")
-    
-    # Initialize auth service with database
-    from auth import set_database
-    set_database(db)
-    
-    # Start the promotion scheduler
-    await start_scheduler(db)
-    
-    logger.info("API startup complete")
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    """Clean shutdown"""
-    from scheduler import stop_scheduler
-    await stop_scheduler()
-    client.close()
-    logger.info("API shutdown complete")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", port=8003, reload=False)

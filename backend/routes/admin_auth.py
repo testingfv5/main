@@ -56,11 +56,29 @@ async def login_step1(user_login: UserLogin, request: Request):
     
     # Check MFA status
     if not user.get("mfa_enabled", False):
-        return {
-            "requires_mfa_setup": True,
-            "username": user_login.username,
-            "message": "MFA setup required"
-        }
+        # For development, allow admin user to login without MFA
+        if user_login.username == "admin":
+            # Create access token for admin without MFA
+            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = AuthService.create_access_token(
+                data={"sub": user_login.username}, expires_delta=access_token_expires
+            )
+            
+            # Update last login
+            await AuthService.log_user_login(user_login.username, client_ip, True)
+            
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                "message": "Login successful (MFA disabled for development)"
+            }
+        else:
+            return {
+                "requires_mfa_setup": True,
+                "username": user_login.username,
+                "message": "MFA setup required"
+            }
     
     return {
         "requires_mfa": True,
@@ -235,4 +253,71 @@ async def create_initial_admin():
         "message": "Initial admin user created successfully",
         "username": "admin",
         "note": "Please setup MFA on first login and change password"
+    }
+
+@router.post("/setup-admin-mfa")
+async def setup_admin_mfa():
+    """Setup MFA for admin user automatically - for development only"""
+    
+    # Get admin user
+    user = await AuthService.get_user_by_username("admin")
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Admin user not found"
+        )
+    
+    # Check if MFA is already enabled
+    if user.get("mfa_enabled", False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="MFA already enabled for admin user"
+        )
+    
+    # Generate MFA secret
+    secret = AuthService.generate_mfa_secret()
+    qr_code = AuthService.generate_qr_code(secret, "admin")
+    
+    # Update user with MFA secret (but not enabled yet)
+    await AuthService.update_user_mfa("admin", secret, enabled=False)
+    
+    return {
+        "secret": secret,
+        "qr_code": qr_code,
+        "manual_entry_key": secret,
+        "instructions": f"Scan the QR code with Google Authenticator or similar app, then verify with a 6-digit code"
+    }
+
+@router.post("/verify-admin-mfa-setup")
+async def verify_admin_mfa_setup(request: Dict[str, str]):
+    """Verify MFA setup for admin user and enable it"""
+    mfa_code = request.get("mfa_code")
+    
+    if not mfa_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="MFA code required"
+        )
+    
+    # Get admin user
+    user = await AuthService.get_user_by_username("admin")
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Admin user not found"
+        )
+    
+    # Verify the code
+    if not AuthService.verify_mfa_token(user["mfa_secret"], mfa_code):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid MFA code"
+        )
+    
+    # Enable MFA for admin user
+    await AuthService.update_user_mfa("admin", user["mfa_secret"], enabled=True)
+    
+    return {
+        "message": "MFA setup completed successfully for admin user",
+        "username": "admin"
     }

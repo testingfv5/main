@@ -176,4 +176,4 @@ Para problemas o preguntas:
 
 ---
 
-**Desarrollado con ❤️ para Óptica Villalba**
+**Desarrollado con ❤️ por Óptica Villalba**
