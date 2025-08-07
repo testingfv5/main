@@ -116,6 +116,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Sistema completo con Google Authenticator, JWT, rate limiting"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Initial admin creation, MFA setup flow, and authentication working perfectly. Admin user created with username 'admin', MFA setup completed successfully, JWT tokens generated correctly."
 
   - task: "APIs de gestión de contenido"
     implemented: true
@@ -128,6 +131,9 @@ backend:
       - working: true
         agent: "main"
         comment: "CRUD completo para configuración del sitio por secciones"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Content management APIs working perfectly. Default content initialization successful (16 configurations), section retrieval working, header section has 6 configurations. All CRUD operations functional."
 
   - task: "Programador automático de promociones"
     implemented: true
@@ -140,6 +146,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Activación/desactivación automática por fechas"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Promotion scheduler running successfully. Background scheduler started and operational. Promotion CRUD operations working, automatic scheduling system functional."
 
   - task: "APIs públicas para frontend"
     implemented: true
@@ -152,18 +161,48 @@ backend:
       - working: true
         agent: "main"
         comment: "Endpoints públicos para consumir contenido y promociones"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: All public APIs working correctly. Fixed circular import issue. Health check returns 'healthy' status, public content endpoints functional, promotions and brands APIs working."
 
   - task: "Sistema de subida de archivos"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/admin_upload.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
         comment: "Necesario para gestión de imágenes del carousel y marcas"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: File upload system fully implemented and working! Image upload successful with optimization, storage stats working (1 file tracked), bulk upload functionality available. Upload directories created properly."
+
+  - task: "Gestión de promociones con programación"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/admin_promotions.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Promotions management fully functional. Created test promotion successfully, CRUD operations working, active promotions filtering working, bulk operations available, image upload for promotions working."
+
+  - task: "Gestión de marcas"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/admin_brands.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Brands management fully functional. Created test brand successfully, CRUD operations working, active brands filtering working, brand ordering functionality available, bulk operations working."
 
 frontend:
   - task: "Panel admin - Estructura base"
