@@ -4,13 +4,13 @@ from datetime import datetime
 
 from models.site_config import SiteConfig, SiteConfigCreate, SiteConfigUpdate
 from auth import get_current_user, get_database
-from server import db
 
 router = APIRouter(prefix="/api/admin/content", tags=["Admin Content Management"])
 
 @router.get("/sections")
 async def get_all_sections(current_user: dict = Depends(get_current_user)):
     """Get all content sections organized by section"""
+    db = get_database()
     sections = {}
     configs = await db.site_config.find().to_list(1000)
     
@@ -32,6 +32,7 @@ async def get_section_content(
     current_user: dict = Depends(get_current_user)
 ):
     """Get content for a specific section"""
+    db = get_database()
     configs = await db.site_config.find({"section": section_name}).to_list(100)
     
     section_content = {}
@@ -51,6 +52,7 @@ async def create_section_config(
     current_user: dict = Depends(get_current_user)
 ):
     """Create new configuration for a section"""
+    db = get_database()
     # Check if config already exists
     existing_config = await db.site_config.find_one({
         "section": section_name,
@@ -89,6 +91,7 @@ async def update_section_config(
     current_user: dict = Depends(get_current_user)
 ):
     """Update configuration in a section"""
+    db = get_database()
     # Find existing config
     existing_config = await db.site_config.find_one({
         "section": section_name,
@@ -153,6 +156,7 @@ async def bulk_update_content(
     current_user: dict = Depends(get_current_user)
 ):
     """Bulk update multiple content sections"""
+    db = get_database()
     updated_count = 0
     
     try:
@@ -199,6 +203,7 @@ async def delete_section_config(
     current_user: dict = Depends(get_current_user)
 ):
     """Delete a specific configuration"""
+    db = get_database()
     config = await db.site_config.find_one({
         "section": section_name,
         "key": config_key
@@ -229,6 +234,7 @@ async def delete_section_config(
 @router.post("/initialize-defaults")
 async def initialize_default_content(current_user: dict = Depends(get_current_user)):
     """Initialize default content for all sections"""
+    db = get_database()
     default_configs = [
         # Header Section
         {
