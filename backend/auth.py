@@ -19,8 +19,19 @@ MFA_COMPANY_NAME = "Óptica Villalba Admin"
 
 security = HTTPBearer()
 
-# MongoDB connection (using existing from server.py)
-from server import db
+# MongoDB connection - will be injected
+_db = None
+
+def set_database(database):
+    """Set database instance for auth service"""
+    global _db
+    _db = database
+
+def get_database():
+    """Get database instance"""
+    if _db is None:
+        raise RuntimeError("Database not initialized. Call set_database() first.")
+    return _db
 
 class AuthService:
     @staticmethod
@@ -99,12 +110,14 @@ class AuthService:
     @staticmethod
     async def get_user_by_username(username: str):
         """Get user from database by username"""
+        db = get_database()
         user = await db.admin_users.find_one({"username": username})
         return user
     
     @staticmethod
     async def create_user(user_data: dict):
         """Create new admin user"""
+        db = get_database()
         # Check if user already exists
         existing_user = await db.admin_users.find_one({"username": user_data["username"]})
         if existing_user:
@@ -124,6 +137,7 @@ class AuthService:
     @staticmethod
     async def update_user_mfa(username: str, secret: str, enabled: bool = True):
         """Update user MFA settings"""
+        db = get_database()
         await db.admin_users.update_one(
             {"username": username},
             {
@@ -138,6 +152,7 @@ class AuthService:
     @staticmethod
     async def log_user_login(username: str, ip_address: str = None, success: bool = True):
         """Log user login attempt"""
+        db = get_database()
         log_entry = {
             "username": username,
             "ip_address": ip_address,
