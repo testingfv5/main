@@ -285,9 +285,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Sistema de subida de archivos"
     - "Panel admin - Estructura base"
     - "Login admin con MFA"
+    - "Gestión de contenido sin código"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -295,3 +295,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Backend completamente implementado. Iniciando creación del panel admin frontend desde cero. Estructura completa en /admin como aplicación React separada."
+  - agent: "testing"
+    message: "✅ BACKEND TESTING COMPLETE: All admin panel backend functionality tested and working perfectly! Fixed circular import issue in public_api.py. All 21 tests passed (100% success rate). Key findings: 1) Initial admin user creation working, 2) MFA setup and authentication flow functional, 3) File upload system with image optimization working, 4) Content management with 16 default configurations, 5) Promotions and brands CRUD operations working, 6) Public APIs and health check operational, 7) Scheduler running in background. Backend is production-ready for admin panel frontend integration."
