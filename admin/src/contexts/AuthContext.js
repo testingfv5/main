@@ -85,6 +85,7 @@ export const AuthProvider = ({ children }) => {
       // Step 1: Login with username/password
       const response = await axios.post('/api/admin/auth/login', credentials);
       
+      // Case 1: MFA setup required
       if (response.data.requires_mfa_setup) {
         return {
           step: 'mfa_setup',
@@ -93,6 +94,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
+      // Case 2: MFA verification required
       if (response.data.requires_mfa) {
         return {
           step: 'mfa_verify',
@@ -101,8 +103,27 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
-      // This shouldn't happen with current backend logic
-      throw new Error('Unexpected login response');
+      // Case 3: Direct login with token (MFA disabled - development mode)
+      if (response.data.access_token) {
+        const authToken = response.data.access_token;
+        localStorage.setItem('admin_token', authToken);
+        setToken(authToken);
+        
+        // Get user info
+        const userResponse = await axios.get('/api/admin/auth/me', {
+          headers: { Authorization: `Bearer ${authToken}` }
+        });
+        setUser(userResponse.data);
+        
+        toast.success('Sesión iniciada correctamente');
+        return {
+          step: 'success',
+          message: response.data.message || 'Login exitoso'
+        };
+      }
+      
+      // Fallback case
+      throw new Error('Respuesta de login inesperada');
       
     } catch (error) {
       const message = error.response?.data?.detail || 'Error en el login';
