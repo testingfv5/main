@@ -16,6 +16,7 @@ from routes.admin_auth import router as admin_auth_router
 from routes.admin_promotions import router as admin_promotions_router
 from routes.admin_brands import router as admin_brands_router
 from routes.admin_content import router as admin_content_router
+from routes.admin_upload import router as admin_upload_router
 from routes.public_api import router as public_api_router
 from scheduler import start_scheduler
 
