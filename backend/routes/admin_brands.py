@@ -3,26 +3,35 @@ from typing import List, Optional
 from datetime import datetime
 
 from models.brand import Brand, BrandCreate, BrandUpdate
-from auth import get_current_user
-from server import db
+from auth import get_current_user, get_database
 import uuid
 
 router = APIRouter(prefix="/api/admin/brands", tags=["Admin Brands"])
 
 @router.get("/", response_model=List[Brand])
-async def get_all_brands(current_user: dict = Depends(get_current_user)):
+async def get_all_brands(
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
+):
     """Get all brands ordered by order field"""
     brands = await db.brands.find().sort("order", 1).to_list(100)
     return [Brand(**brand) for brand in brands]
 
 @router.get("/active", response_model=List[Brand])
-async def get_active_brands(current_user: dict = Depends(get_current_user)):
+async def get_active_brands(
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
+):
     """Get only active brands"""
     brands = await db.brands.find({"is_active": True}).sort("order", 1).to_list(100)
     return [Brand(**brand) for brand in brands]
 
 @router.get("/{brand_id}", response_model=Brand)
-async def get_brand(brand_id: str, current_user: dict = Depends(get_current_user)):
+async def get_brand(
+    brand_id: str, 
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
+):
     """Get specific brand"""
     brand = await db.brands.find_one({"id": brand_id})
     if not brand:
@@ -35,7 +44,8 @@ async def get_brand(brand_id: str, current_user: dict = Depends(get_current_user
 @router.post("/", response_model=Brand)
 async def create_brand(
     brand: BrandCreate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Create new brand"""
     brand_dict = brand.dict()
@@ -61,7 +71,8 @@ async def create_brand(
 async def update_brand(
     brand_id: str,
     brand_update: BrandUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Update existing brand"""
     # Check if brand exists
@@ -99,7 +110,8 @@ async def update_brand(
 @router.delete("/{brand_id}")
 async def delete_brand(
     brand_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Delete brand"""
     brand = await db.brands.find_one({"id": brand_id})
@@ -126,7 +138,8 @@ async def delete_brand(
 @router.put("/reorder")
 async def reorder_brands(
     brand_orders: List[dict],  # [{"id": "brand_id", "order": 1}, ...]
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Reorder brands"""
     try:
@@ -155,7 +168,8 @@ async def reorder_brands(
 @router.post("/bulk-activate")
 async def bulk_activate_brands(
     brand_ids: List[str],
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Activate multiple brands"""
     result = await db.brands.update_many(
@@ -176,7 +190,8 @@ async def bulk_activate_brands(
 @router.post("/bulk-deactivate")
 async def bulk_deactivate_brands(
     brand_ids: List[str],
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_database)
 ):
     """Deactivate multiple brands"""
     result = await db.brands.update_many(
