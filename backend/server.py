@@ -66,6 +66,7 @@ app.include_router(admin_auth_router)  # Admin authentication
 app.include_router(admin_promotions_router)  # Admin promotions
 app.include_router(admin_brands_router)  # Admin brands
 app.include_router(admin_content_router)  # Admin content management
+app.include_router(admin_upload_router)  # Admin file uploads
 app.include_router(public_api_router)  # Public API endpoints
 
 # Create uploads directory and serve static files
