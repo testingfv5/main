@@ -10,7 +10,8 @@ from auth import (
     check_rate_limit, 
     record_login_attempt, 
     get_current_user,
-    ACCESS_TOKEN_EXPIRE_MINUTES
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    get_database
 )
 
 router = APIRouter(prefix="/api/admin/auth", tags=["Admin Authentication"])
