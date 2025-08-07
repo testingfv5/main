@@ -15,7 +15,7 @@ from PIL import Image
 import io
 
 # Configuration
-BACKEND_URL = "https://53fc65e9-913c-4bc6-8e00-40ca58210455.preview.emergentagent.com/api"
+BACKEND_URL = "https://2fa4a1ba-face-46b0-ba11-de7bea8f004d.preview.emergentagent.com/api"
 TEST_USERNAME = "admin"
 TEST_PASSWORD = "AdminPass123!"
 
