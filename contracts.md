@@ -122,14 +122,17 @@ Brand {
 - Validación de permisos en todos los endpoints protegidos
 - Sanitización de inputs
 
-## Panel Admin Routes (Frontend)
-- `/admin/login` - Página de login
+## Panel Admin Routes (Frontend) - Carpeta Separada /admin
+- `/admin/login` - Página de login con MFA
 - `/admin/dashboard` - Dashboard principal
-- `/admin/promotions` - Gestión de promociones
-- `/admin/promotions/new` - Crear promoción
-- `/admin/promotions/edit/:id` - Editar promoción
-- `/admin/brands` - Gestión de marcas
-- `/admin/settings` - Configuración del sitio
+- `/admin/promotions` - Gestión completa de promociones con calendario
+- `/admin/content/header` - Editar header y navegación
+- `/admin/content/hero` - Gestión del carousel hero
+- `/admin/content/info` - Editar sección de información
+- `/admin/content/brands` - Gestión de marcas con colores
+- `/admin/content/footer` - Editar footer y contacto
+- `/admin/preview` - Preview en tiempo real de toda la página
+- `/admin/settings` - Configuración general y usuarios
 
 ## Integración Frontend-Backend
 
