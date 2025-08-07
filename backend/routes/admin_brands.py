@@ -11,21 +11,17 @@ router = APIRouter(prefix="/api/admin/brands", tags=["Admin Brands"])
 
 
 @router.get("/", response_model=List[Brand])
-async def get_all_brands(
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
-):
+async def get_all_brands(current_user: dict = Depends(get_current_user)):
     """Get all brands ordered by order field"""
+    db = get_database()
     brands = await db.brands.find().sort("order", 1).to_list(100)
     return [Brand(**brand) for brand in brands]
 
 
 @router.get("/active", response_model=List[Brand])
-async def get_active_brands(
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
-):
+async def get_active_brands(current_user: dict = Depends(get_current_user)):
     """Get only active brands"""
+    db = get_database()
     brands = await db.brands.find({"is_active": True}).sort("order", 1).to_list(100)
     return [Brand(**brand) for brand in brands]
 
@@ -33,10 +29,10 @@ async def get_active_brands(
 @router.get("/{brand_id}", response_model=Brand)
 async def get_brand(
     brand_id: str,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get specific brand"""
+    db = get_database()
     brand = await db.brands.find_one({"id": brand_id})
     if not brand:
         raise HTTPException(
@@ -49,10 +45,10 @@ async def get_brand(
 @router.post("/", response_model=Brand)
 async def create_brand(
     brand: BrandCreate,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Create new brand"""
+    db = get_database()
     brand_dict = brand.dict()
     brand_dict["id"] = str(uuid.uuid4())
     brand_dict["created_at"] = datetime.utcnow()
@@ -77,10 +73,10 @@ async def create_brand(
 async def update_brand(
     brand_id: str,
     brand_update: BrandUpdate,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Update existing brand"""
+    db = get_database()
     # Check if brand exists
     existing_brand = await db.brands.find_one({"id": brand_id})
     if not existing_brand:
@@ -117,10 +113,10 @@ async def update_brand(
 @router.delete("/{brand_id}")
 async def delete_brand(
     brand_id: str,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Delete brand"""
+    db = get_database()
     brand = await db.brands.find_one({"id": brand_id})
     if not brand:
         raise HTTPException(
@@ -146,10 +142,10 @@ async def delete_brand(
 @router.put("/reorder")
 async def reorder_brands(
     brand_orders: List[dict],  # [{"id": "brand_id", "order": 1}, ...]
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Reorder brands"""
+    db = get_database()
     try:
         for item in brand_orders:
             await db.brands.update_one(
@@ -177,10 +173,10 @@ async def reorder_brands(
 @router.post("/bulk-activate")
 async def bulk_activate_brands(
     brand_ids: List[str],
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Activate multiple brands"""
+    db = get_database()
     result = await db.brands.update_many(
         {"id": {"$in": brand_ids}},
         {"$set": {"is_active": True, "updated_at": datetime.utcnow()}}
@@ -200,10 +196,10 @@ async def bulk_activate_brands(
 @router.post("/bulk-deactivate")
 async def bulk_deactivate_brands(
     brand_ids: List[str],
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_database)
+    current_user: dict = Depends(get_current_user)
 ):
     """Deactivate multiple brands"""
+    db = get_database()
     result = await db.brands.update_many(
         {"id": {"$in": brand_ids}},
         {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
