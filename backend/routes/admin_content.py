@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 from datetime import datetime
 
 from models.site_config import SiteConfig, SiteConfigCreate, SiteConfigUpdate
-from auth import get_current_user
+from auth import get_current_user, get_database
 from server import db
 
 router = APIRouter(prefix="/api/admin/content", tags=["Admin Content Management"])
