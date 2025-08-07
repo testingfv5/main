@@ -3,7 +3,8 @@ from typing import List, Optional
 from datetime import datetime
 
 from models.promotion import Promotion, PromotionCreate, PromotionUpdate
-from auth import get_current_user, get_database
+from auth import get_current_user
+from server import db
 import uuid
 import os
 import shutil
@@ -18,14 +19,12 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 @router.get("/", response_model=List[Promotion])
 async def get_all_promotions(current_user: dict = Depends(get_current_user)):
     """Get all promotions (active and inactive)"""
-    db = get_database()
     promotions = await db.promotions.find().sort("created_at", -1).to_list(100)
     return [Promotion(**promo) for promo in promotions]
 
 @router.get("/active", response_model=List[Promotion])
 async def get_active_promotions(current_user: dict = Depends(get_current_user)):
     """Get only active promotions within date range"""
-    db = get_database()
     now = datetime.utcnow()
     query = {
         "is_active": True,
@@ -38,7 +37,6 @@ async def get_active_promotions(current_user: dict = Depends(get_current_user)):
 @router.get("/{promotion_id}", response_model=Promotion)
 async def get_promotion(promotion_id: str, current_user: dict = Depends(get_current_user)):
     """Get specific promotion"""
-    db = get_database()
     promotion = await db.promotions.find_one({"id": promotion_id})
     if not promotion:
         raise HTTPException(
@@ -53,7 +51,6 @@ async def create_promotion(
     current_user: dict = Depends(get_current_user)
 ):
     """Create new promotion"""
-    db = get_database()
     promotion_dict = promotion.dict()
     promotion_dict["id"] = str(uuid.uuid4())
     promotion_dict["created_at"] = datetime.utcnow()
@@ -87,7 +84,6 @@ async def update_promotion(
     current_user: dict = Depends(get_current_user)
 ):
     """Update existing promotion"""
-    db = get_database()
     # Check if promotion exists
     existing_promotion = await db.promotions.find_one({"id": promotion_id})
     if not existing_promotion:
@@ -135,7 +131,6 @@ async def delete_promotion(
     current_user: dict = Depends(get_current_user)
 ):
     """Delete promotion"""
-    db = get_database()
     promotion = await db.promotions.find_one({"id": promotion_id})
     if not promotion:
         raise HTTPException(
@@ -173,7 +168,6 @@ async def upload_promotion_image(
     current_user: dict = Depends(get_current_user)
 ):
     """Upload image for promotion"""
-    db = get_database()
     # Check if promotion exists
     promotion = await db.promotions.find_one({"id": promotion_id})
     if not promotion:
@@ -242,7 +236,6 @@ async def bulk_activate_promotions(
     current_user: dict = Depends(get_current_user)
 ):
     """Activate multiple promotions"""
-    db = get_database()
     result = await db.promotions.update_many(
         {"id": {"$in": promotion_ids}},
         {"$set": {"is_active": True, "updated_at": datetime.utcnow()}}
@@ -264,7 +257,6 @@ async def bulk_deactivate_promotions(
     current_user: dict = Depends(get_current_user)
 ):
     """Deactivate multiple promotions"""
-    db = get_database()
     result = await db.promotions.update_many(
         {"id": {"$in": promotion_ids}},
         {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
