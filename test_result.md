@@ -206,76 +206,76 @@ backend:
 
 frontend:
   - task: "Panel admin - Estructura base"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/admin/"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Crear aplicación React separada en /admin"
+        comment: "Aplicación React completa ejecutándose en puerto 3001"
 
   - task: "Login admin con MFA"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "/app/admin/src/pages/LoginPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Interfaz de login con integración Google Authenticator"
+        comment: "Flujo de autenticación MFA completo con Google Authenticator integrado"
 
   - task: "Gestión de contenido sin código"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "/app/admin/src/pages/ContentPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Interfaz para editar todas las secciones de la página"
+        comment: "Editor visual completo para todas las secciones del sitio"
 
   - task: "Gestión de promociones con calendario"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "/app/admin/src/pages/PromotionsPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Calendario intuitivo para programar promociones"
+        comment: "Sistema completo de promociones con fechas programadas"
 
   - task: "Preview en tiempo real"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "/app/admin/src/pages/PreviewPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Vista previa inmediata de cambios antes de aplicar"
+        comment: "Vista previa responsive con iframe integrado"
 
   - task: "Sistema de subida de imágenes"
-    implemented: false
-    working: false
-    file: "pending"
+    implemented: true
+    working: true
+    file: "integrado en todas las páginas"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Drag & drop para subir imágenes del carousel"
+        comment: "Drag & drop integrado con optimización automática"
 
 metadata:
   created_by: "main_agent"
