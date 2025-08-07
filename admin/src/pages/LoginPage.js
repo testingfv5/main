@@ -43,7 +43,11 @@ const LoginPage = () => {
       const result = await login(loginData);
       setUsername(loginData.username);
 
-      if (result.step === 'mfa_setup') {
+      if (result.step === 'success') {
+        // Login successful, user will be redirected automatically
+        // AuthContext already handled token storage and user state
+        return;
+      } else if (result.step === 'mfa_setup') {
         setStep('mfa_setup');
         // Get MFA setup data
         const setupData = await setupMFA(loginData.username);
