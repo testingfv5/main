@@ -94,6 +94,10 @@ async def startup_event():
     """Initialize application on startup"""
     logger.info("Starting Óptica Villalba API...")
     
+    # Initialize auth service with database
+    from auth import set_database
+    set_database(db)
+    
     # Start the promotion scheduler
     await start_scheduler(db)
     
