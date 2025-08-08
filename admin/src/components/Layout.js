@@ -7,7 +7,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -16,22 +16,22 @@ const Layout = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Always fixed */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Main content */}
-      <div className="lg:pl-64">
+      {/* Main content area - Full width minus sidebar */}
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page content */}
-        <main className="py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 overflow-y-auto">
+          <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
             <Outlet />
           </div>
         </main>

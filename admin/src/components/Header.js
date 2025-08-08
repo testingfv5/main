@@ -14,9 +14,9 @@ const Header = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 justify-between items-center">
+    <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 w-full">
+      <div className="h-full w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex h-full justify-between items-center">
           {/* Mobile menu button */}
           <button
             type="button"

@@ -24,7 +24,7 @@ const Sidebar = ({ onClose }) => {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
+      {/* Logo and Title */}
       <div className="flex h-16 flex-shrink-0 items-center justify-between px-6 border-b border-gray-200">
         <div className="flex items-center">
           <div className="flex-shrink-0">

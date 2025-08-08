@@ -70,7 +70,7 @@ const DashboardPage = () => {
       bgColor: 'bg-blue-100',
     },
     {
-      name: 'Marcas Activas',
+      name: 'Visitas',
       value: stats.activeBrands,
       icon: TagIcon,
       color: 'text-purple-600',
@@ -94,17 +94,17 @@ const DashboardPage = () => {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-600">
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="border-b border-gray-200 pb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="mt-2 text-sm text-gray-600">
           Vista general del estado de tu sitio web
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
           <div key={stat.name} className="card">
             <div className="flex items-center">
