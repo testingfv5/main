@@ -9,7 +9,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-slate-900">
       <Header />
-      <main>
+      <main className="pt-24">
         <HeroCarousel />
         <InfoSection />
         <BrandMarquee />

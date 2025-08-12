@@ -108,7 +108,8 @@ const HeroCarousel = () => {
 
   return (
     <section
-      id="promociones"
+      id="top"
+      data-anchor="promociones"
       className="relative overflow-hidden bg-slate-900"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
@@ -131,9 +132,9 @@ const HeroCarousel = () => {
             }`}
           >
             <div className="container mx-auto px-4 h-full flex items-center">
-              <div className="grid md:grid-cols-2 gap-8 items-center w-full">
+              <div className="grid md:grid-cols-12 gap-6 items-center w-full">
                 {/* Content */}
-                <div className="text-white space-y-6 z-10">
+                <div className="text-white space-y-6 z-10 md:col-span-5">
                   <div className="flex items-center space-x-2 text-sm">
                     <Zap className="w-4 h-4 text-yellow-400" />
                     <span className="text-yellow-400 font-medium uppercase tracking-wide">
@@ -166,16 +167,37 @@ const HeroCarousel = () => {
                 </div>
                 
                 {/* Placeholder for promotion image */}
-                <div className="relative hidden md:block">
-                  <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl border border-slate-600 flex items-center justify-center shadow-2xl">
-                    <div className="text-center text-slate-400">
-                      <div className="w-24 h-24 mx-auto mb-4 bg-slate-600 rounded-full flex items-center justify-center">
-                        <span className="text-3xl">📸</span>
+                <div className="relative hidden md:flex items-center justify-start md:col-span-7">
+                  {(() => {
+                    const isSunglasses = promo.title === "Anteojos de Sol";
+                    const widthClasses = isSunglasses ? "w-full" : "w-[92%] lg:w-[96%]";
+                    const offsetClasses = isSunglasses ? "-ml-2 sm:-ml-3 md:-ml-4 lg:-ml-6" : "";
+                    return (
+                      <div className={`relative rounded-xl border border-slate-600 overflow-hidden shadow-2xl p-0 ${widthClasses} ${offsetClasses}`}>
+                        {promo.image ? (
+                          <>
+                            {/* Imagen principal contenida */}
+                            <img
+                              src={promo.image}
+                              alt={promo.title}
+                              className="relative block w-full h-auto object-contain rounded-xl"
+                              loading="lazy"
+                            />
+                          </>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center text-slate-400">
+                            <div className="text-center">
+                              <div className="w-20 h-20 mx-auto mb-3 bg-slate-600 rounded-full flex items-center justify-center">
+                                <span className="text-2xl">📸</span>
+                              </div>
+                              <p className="text-xs">Imagen de Promoción</p>
+                              <p className="text-[10px] text-slate-500">Placeholder</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm">Imagen de Promoción</p>
-                      <p className="text-xs text-slate-500">Placeholder</p>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -185,14 +207,14 @@ const HeroCarousel = () => {
         {/* Navigation Buttons */}
         <button
           onClick={prevSlide}
-          className="hidden md:flex absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 bg-slate-800/70 backdrop-blur-sm text-white p-3 rounded-full hover:bg-slate-700/70 transition-all duration-300 border border-slate-600 group z-20"
+          className="hidden md:flex absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 bg-slate-800/70 text-white p-3 rounded-full hover:bg-slate-700/70 transition-all duration-300 border border-slate-600 group z-20"
         >
           <ChevronLeft className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>
         
         <button
           onClick={nextSlide}
-          className="hidden md:flex absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 bg-slate-800/70 backdrop-blur-sm text-white p-3 rounded-full hover:bg-slate-700/70 transition-all duration-300 border border-slate-600 group z-20"
+          className="hidden md:flex absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 bg-slate-800/70 text-white p-3 rounded-full hover:bg-slate-700/70 transition-all duration-300 border border-slate-600 group z-20"
         >
           <ChevronRight className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>

@@ -3,30 +3,23 @@
 export const mockPromotions = [
   {
     id: 1,
-    title: "en Lentes Recetados",
-    discount: "50% OFF",
-    type: "Promoción Especial",
-    description: "Aprovechá nuestra oferta especial en lentes recetados. Incluye consulta gratuita con optometrista y garantía extendida.",
-    features: ["Consulta Gratuita", "Garantía 2 años", "Entrega Rápida"],
-    validUntil: "2024-02-15"
+    title: "Anteojos de Sol",
+    discount: "15% OFF",
+    type: "Promoción",
+    description: "Pagando en efectivo.",
+    features: ["Anteojos de sol", "15% OFF", "Pago en efectivo"],
+    validUntil: "2025-12-31",
+    image: "/assets/images/promo1-desktop.jpg"
   },
   {
     id: 2,
-    title: "en Gafas de Sol",
-    discount: "30% OFF",
-    type: "Oferta Diaria",
-    description: "Protegé tus ojos con estilo. Gran variedad de marcas premium con filtros UV400 y diseños exclusivos.",
-    features: ["UV400", "Marcas Premium", "Diseños Exclusivos"],
-    validUntil: "2024-02-10"
-  },
-  {
-    id: 3,
-    title: "en Armazones",
-    discount: "40% OFF",
-    type: "Promoción Mensual",
-    description: "Encontrá el armazón perfecto para tu estilo. Amplia selección de materiales y colores con ajuste personalizado.",
-    features: ["Ajuste Gratis", "Amplia Selección", "Materiales Premium"],
-    validUntil: "2024-02-29"
+    title: "Promo Multifocales",
+    discount: "2x1",
+    type: "Promoción",
+    description: "Comprando un par de multifocales ZEISS o VARILUX, te llevás el segundo par de regalo. Además, 3 y 6 cuotas sin interés con Visa y Mastercard.",
+    features: ["ZEISS o VARILUX", "Segundo par de regalo", "3 y 6 cuotas sin interés", "Visa / Mastercard"],
+    validUntil: "2025-12-31",
+    image: "/assets/images/promo2-desktop.jpg"
   }
 ];
 
@@ -58,7 +51,7 @@ export const mockBrands = [
 export const mockCompanyInfo = {
   name: "Óptica Villalba",
   tagline: "Calidad Visual",
-  description: "Elevar su estándar de vida, maximizando su calidad visual, proponiéndole siempre los más avanzados productos con la más alta calidad.",
+  description: "Nuestro compromiso es elevar su estándar de vida, maximizando su calidad visual, proponiéndole siempre los más avanzados productos con la más alta calidad.",
   address: "Av. Las Heras 3751, Palermo, Buenos Aires",
   phone: "+54 11 6415-6306",
   whatsapp: "https://wa.me/541164156306",
@@ -73,5 +66,5 @@ export const mockCompanyInfo = {
     "Reparaciones",
     "Ajustes Personalizados"
   ],
-  commitment: "Nuestro compromiso: Elevar su estándar de vida, maximizando su calidad visual, proponiéndole siempre los más avanzados productos con la más alta calidad."
+  commitment: "Nuestro compromiso es elevar su estándar de vida, maximizando su calidad visual, proponiéndole siempre los más avanzados productos con la más alta calidad."
 };

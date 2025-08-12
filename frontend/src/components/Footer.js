@@ -4,7 +4,7 @@ import { mockCompanyInfo } from "../data/mockData";
 
 const Footer = () => {
   return (
-    <footer id="contacto" className="bg-slate-950 border-t border-slate-800">
+    <footer id="info" className="bg-slate-950 border-t border-slate-800 scroll-mt-24">
       {/* Attribution for third-party brands */}
       <div className="border-b border-slate-800 bg-slate-900/60">
         <div className="container mx-auto px-4 py-4">
@@ -20,7 +20,11 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-red-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">V</span>
+                <img
+                  src="/assets/images/logo-white.png"
+                  alt="Óptica Villalba"
+                  className="w-7 h-7 object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">{mockCompanyInfo.name}</h3>

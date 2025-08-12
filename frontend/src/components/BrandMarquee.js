@@ -79,13 +79,21 @@ const BrandMarquee = () => {
     };
   }, []);
 
+  const hasFinePointer = () =>
+    typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+
   const pause = () => { runningRef.current = false; };
   const resume = () => { runningRef.current = true; };
-  const accelerate = () => { speedMultiplierRef.current = 2.5; runningRef.current = true; };
+  const accelerate = () => {
+    if (hasFinePointer()) {
+      speedMultiplierRef.current = 2.5; // only desktop/mouse
+      runningRef.current = true;
+    }
+  };
   const normalize = () => { speedMultiplierRef.current = 1; runningRef.current = true; };
 
   return (
-    <section id="marcas" className="bg-slate-800 py-16">
+    <section id="informacion" className="bg-slate-800 py-16 scroll-mt-24">
       <div className="container mx-auto px-4">
         <h2 className="text-center text-2xl md:text-3xl font-bold text-white mb-8 leading-tight">
           <span className="bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">

@@ -22,7 +22,7 @@ const InfoSection = () => {
     {
       icon: <Zap className="w-8 h-8" />,
       title: "Servicio Express",
-      description: "Entrega rápida y servicio técnico especializado"
+      description: "Entrega rápida, servicio técnico especializado y entrega local a domicilio en el barrio y zonas próximas *(consultar costo de envío)."
     }
   ];
 
@@ -44,9 +44,19 @@ const InfoSection = () => {
 
           </h2>
           
-          <p className="text-xl text-slate-300 max-w-4xl mx-auto leading-relaxed">
-            {mockCompanyInfo.commitment}
-          </p>
+          {(() => {
+            const commitment = mockCompanyInfo.commitment || '';
+            const [label, ...restParts] = commitment.split(':');
+            const rest = restParts.join(':').trim();
+            return (
+              <p className="text-lg md:text-xl text-slate-200 max-w-4xl mx-auto leading-relaxed">
+                <span className="font-semibold text-slate-100">
+                  {label || 'Nuestro compromiso'}
+                </span>
+                {rest ? <span className="opacity-90">: {rest}</span> : null}
+              </p>
+            );
+          })()}
         </div>
 
         {/* Features Grid */}
@@ -54,15 +64,15 @@ const InfoSection = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 hover:bg-slate-800/80 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/10 hover:scale-105"
+              className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 transition-all duration-300 md:hover:bg-slate-800/80 md:hover:shadow-2xl md:hover:shadow-blue-600/10 md:hover:scale-105"
             >
-              <div className="text-blue-400 mb-6 group-hover:text-red-400 transition-colors duration-300">
+              <div className="text-blue-400 mb-6 transition-colors duration-300 md:group-hover:text-red-400">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-blue-400 transition-colors">
+              <h3 className="text-xl font-semibold text-white mb-4 transition-colors md:group-hover:text-blue-400">
                 {feature.title}
               </h3>
-              <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+              <p className="text-slate-400 leading-relaxed transition-colors md:group-hover:text-slate-300">
                 {feature.description}
               </p>
             </div>
