@@ -102,216 +102,216 @@ const LoginPage = () => {
 
   const resetToLogin = () => {
     setStep('login');
-    setLoginData({ username: '', password: '' });
     setMfaCode('');
-    setUsername('');
-    setMfaSetup({ secret: '', qr_code: '', manual_entry_key: '' });
+    setLoginData({ username: '', password: '' });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="xl" />
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div>
-          <div className="mx-auto h-16 w-16 bg-primary-600 rounded-full flex items-center justify-center">
+        {/* Logo and Title */}
+        <div className="text-center">
+          <div className="mx-auto h-16 w-16 bg-gradient-to-br from-blue-600 to-red-600 rounded-full flex items-center justify-center">
             <ShieldCheckIcon className="h-8 w-8 text-white" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-white">
             Panel Administrativo
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Óptica Villalba - Acceso Seguro
+          <p className="mt-2 text-sm text-gray-400">
+            Óptica Villalba
           </p>
         </div>
 
         {/* Login Form */}
         {step === 'login' && (
-          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-            <div className="rounded-md shadow-sm -space-y-px">
+          <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-8">
+            <form className="space-y-6" onSubmit={handleLogin}>
               <div>
-                <label htmlFor="username" className="sr-only">Usuario</label>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-200">
+                  Usuario
+                </label>
                 <input
                   id="username"
                   name="username"
                   type="text"
                   required
-                  className="relative block w-full rounded-t-md border-0 py-3 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm"
-                  placeholder="Usuario"
                   value={loginData.username}
-                  onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ingrese su usuario"
                 />
               </div>
-              <div className="relative">
-                <label htmlFor="password" className="sr-only">Contraseña</label>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  className="relative block w-full rounded-b-md border-0 py-3 px-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm"
-                  placeholder="Contraseña"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                />
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-200">
+                  Contraseña
+                </label>
+                <div className="mt-1 relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10"
+                    placeholder="Ingrese su contraseña"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
                 <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  type="submit"
+                  disabled={isLoading}
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  {isLoading ? (
+                    <LoadingSpinner size="sm" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                    'Iniciar Sesión'
                   )}
                 </button>
               </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <LoadingSpinner size="sm" className="text-white" />
-                ) : (
-                  'Iniciar Sesión'
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         )}
 
         {/* MFA Setup */}
         {step === 'mfa_setup' && (
-          <div className="mt-8 space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <h3 className="text-lg font-medium text-blue-900 mb-2">
-                Configurar Autenticación de Dos Factores
-              </h3>
-              <p className="text-sm text-blue-700">
-                Escanee el código QR con Google Authenticator o similar app de autenticación.
+          <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-8">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-medium text-white">Configurar Autenticación de Dos Factores</h3>
+              <p className="mt-2 text-sm text-gray-400">
+                Escanee el código QR con su aplicación de autenticación
               </p>
             </div>
 
-            {/* QR Code */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <QRCode value={mfaSetup.qr_code} size={200} />
+            <div className="space-y-6">
+              {/* QR Code */}
+              <div className="flex justify-center">
+                <div className="bg-white p-4 rounded-lg">
+                  <QRCode value={mfaSetup.qr_code} size={200} />
+                </div>
               </div>
-              
-              <div className="w-full">
-                <label className="label">Clave manual (si no puede escanear):</label>
+
+              {/* Manual Entry */}
+              <div>
+                <label className="block text-sm font-medium text-gray-200 mb-2">
+                  Clave Manual (si no puede escanear el código)
+                </label>
                 <input
                   type="text"
-                  readOnly
                   value={mfaSetup.manual_entry_key}
-                  className="input text-center font-mono text-xs"
+                  readOnly
+                  className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-gray-300 font-mono text-sm"
                 />
               </div>
-            </div>
 
-            {/* Verification */}
-            <form onSubmit={handleMFASetup}>
-              <div className="space-y-4">
+              {/* Verification Code */}
+              <form onSubmit={handleMFASetup}>
                 <div>
-                  <label className="label">Código de verificación (6 dígitos):</label>
+                  <label htmlFor="mfa-code" className="block text-sm font-medium text-gray-200">
+                    Código de Verificación
+                  </label>
                   <input
+                    id="mfa-code"
                     type="text"
-                    maxLength="6"
-                    pattern="[0-9]{6}"
                     required
-                    className="input text-center text-lg font-mono"
-                    placeholder="000000"
                     value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setMfaCode(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="000000"
+                    maxLength={6}
                   />
                 </div>
-                
-                <div className="flex space-x-3">
+
+                <div className="flex space-x-3 mt-6">
                   <button
                     type="button"
                     onClick={resetToLogin}
-                    className="flex-1 btn btn-secondary"
+                    className="flex-1 py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   >
-                    Cancelar
+                    Volver
                   </button>
                   <button
                     type="submit"
-                    disabled={isLoading || mfaCode.length !== 6}
-                    className="flex-1 btn btn-primary disabled:opacity-50"
+                    disabled={isLoading}
+                    className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? <LoadingSpinner size="sm" /> : 'Verificar'}
                   </button>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         )}
 
         {/* MFA Verification */}
         {step === 'mfa_verify' && (
-          <div className="mt-8 space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-md p-4">
-              <h3 className="text-lg font-medium text-green-900 mb-2">
-                Verificación de Dos Factores
-              </h3>
-              <p className="text-sm text-green-700">
-                Ingrese el código de 6 dígitos de su aplicación de autenticación.
+          <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-8">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-medium text-white">Verificación de Dos Factores</h3>
+              <p className="mt-2 text-sm text-gray-400">
+                Ingrese el código de su aplicación de autenticación
               </p>
             </div>
 
-            <form onSubmit={handleMFAVerify}>
-              <div className="space-y-4">
-                <div>
-                  <label className="label">Código de verificación:</label>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    pattern="[0-9]{6}"
-                    required
-                    className="input text-center text-lg font-mono"
-                    placeholder="000000"
-                    value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
-                    autoFocus
-                  />
-                </div>
-                
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={resetToLogin}
-                    className="flex-1 btn btn-secondary"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isLoading || mfaCode.length !== 6}
-                    className="flex-1 btn btn-primary disabled:opacity-50"
-                  >
-                    {isLoading ? <LoadingSpinner size="sm" /> : 'Verificar'}
-                  </button>
-                </div>
+            <form onSubmit={handleMFAVerify} className="space-y-6">
+              <div>
+                <label htmlFor="mfa-verify-code" className="block text-sm font-medium text-gray-200">
+                  Código de Verificación
+                </label>
+                <input
+                  id="mfa-verify-code"
+                  type="text"
+                  required
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={resetToLogin}
+                  className="flex-1 py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Volver
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? <LoadingSpinner size="sm" /> : 'Verificar'}
+                </button>
               </div>
             </form>
           </div>
         )}
-
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-500">
-          <p>Sistema de administración seguro con autenticación MFA</p>
-        </div>
       </div>
     </div>
   );

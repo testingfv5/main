@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../components/Header";
 import HeroCarousel from "../components/HeroCarousel";
 import InfoSection from "../components/InfoSection";
-import BrandsSection from "../components/BrandsSection";
+import BrandMarquee from "../components/BrandMarquee";
 import Footer from "../components/Footer";
 
 const HomePage = () => {
@@ -12,7 +12,7 @@ const HomePage = () => {
       <main>
         <HeroCarousel />
         <InfoSection />
-        <BrandsSection />
+        <BrandMarquee />
       </main>
       <Footer />
     </div>

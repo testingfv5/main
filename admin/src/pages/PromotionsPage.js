@@ -232,13 +232,13 @@ const PromotionsPage = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
+      <div className="border-b border-gray-700 pb-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Promociones</h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <h1 className="text-3xl font-bold text-white">Promociones</h1>
+            <p className="mt-2 text-sm text-gray-400">
               Crea y programa promociones que se activan automáticamente
             </p>
           </div>
@@ -250,8 +250,8 @@ const PromotionsPage = () => {
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-2 text-sm font-medium rounded-l-md border ${
                   viewMode === 'list'
-                    ? 'bg-primary-50 text-primary-700 border-primary-200'
-                    : 'bg-white text-gray-500 border-gray-300 hover:text-gray-700'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-gray-700 text-gray-300 border-gray-600 hover:text-white hover:bg-gray-600'
                 }`}
               >
                 Lista
@@ -260,8 +260,8 @@ const PromotionsPage = () => {
                 onClick={() => setViewMode('calendar')}
                 className={`px-3 py-2 text-sm font-medium rounded-r-md border-l-0 border ${
                   viewMode === 'calendar'
-                    ? 'bg-primary-50 text-primary-700 border-primary-200'
-                    : 'bg-white text-gray-500 border-gray-300 hover:text-gray-700'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-gray-700 text-gray-300 border-gray-600 hover:text-white hover:bg-gray-600'
                 }`}
               >
                 <CalendarIcon className="h-4 w-4 inline mr-1" />
@@ -271,10 +271,10 @@ const PromotionsPage = () => {
             
             <button
               onClick={() => openModal()}
-              className="btn btn-primary"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-2"
             >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Nueva Promoción
+              <PlusIcon className="h-4 w-4" />
+              <span>Nueva Promoción</span>
             </button>
           </div>
         </div>
@@ -284,29 +284,29 @@ const PromotionsPage = () => {
       {viewMode === 'list' && (
         <div className="card">
           <div className="overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Promoción
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Tipo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Fechas
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Estado
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-gray-800 divide-y divide-gray-700">
                 {promotions.map((promotion) => (
-                  <tr key={promotion.id} className="hover:bg-gray-50">
+                  <tr key={promotion.id} className="hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {promotion.image_url && (
@@ -317,23 +317,23 @@ const PromotionsPage = () => {
                           />
                         )}
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-white">
                             {promotion.title}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-400">
                             {promotion.discount}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {promotion.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <div>
                         {format(parseISO(promotion.start_date), 'dd MMM yyyy', { locale: es })}
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-500">
                         al {format(parseISO(promotion.end_date), 'dd MMM yyyy', { locale: es })}
                       </div>
                     </td>
@@ -345,19 +345,19 @@ const PromotionsPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       <button
                         onClick={() => toggleActive(promotion.id, promotion.is_active)}
-                        className={`text-sm ${promotion.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`text-sm ${promotion.is_active ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'}`}
                       >
                         {promotion.is_active ? 'Desactivar' : 'Activar'}
                       </button>
                       <button
                         onClick={() => openModal(promotion)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-400 hover:text-blue-300"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(promotion.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-400 hover:text-red-300"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -369,8 +369,8 @@ const PromotionsPage = () => {
             
             {promotions.length === 0 && (
               <div className="text-center py-12">
-                <MegaphoneIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Sin promociones</h3>
+                <MegaphoneIcon className="mx-auto h-12 w-12 text-gray-500" />
+                <h3 className="mt-2 text-sm font-medium text-gray-300">Sin promociones</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Comienza creando tu primera promoción.
                 </p>

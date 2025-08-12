@@ -31,67 +31,33 @@ export const mockPromotions = [
 ];
 
 export const mockBrands = [
-  {
-    id: 1,
-    name: "Ray-Ban",
-    color: "#DC2626", // Red
-    textColor: "#FFFFFF",
-    description: "Lentes icónicos desde 1937"
-  },
-  {
-    id: 2,
-    name: "Oakley",
-    color: "#1F2937", // Dark gray/black
-    textColor: "#FFFFFF",
-    description: "Tecnología deportiva avanzada"
-  },
-  {
-    id: 3,
-    name: "Ay Not Dead",
-    color: "#7C3AED", // Purple
-    textColor: "#FFFFFF",
-    description: "Diseño argentino innovador"
-  },
-  {
-    id: 4,
-    name: "Prada",
-    color: "#000000", // Black
-    textColor: "#FFFFFF",
-    description: "Elegancia italiana"
-  },
-  {
-    id: 5,
-    name: "Giorgio Armani",
-    color: "#1E40AF", // Blue
-    textColor: "#FFFFFF",
-    description: "Sofisticación atemporal"
-  },
-  {
-    id: 6,
-    name: "Dolce & Gabbana",
-    color: "#B91C1C", // Dark red
-    textColor: "#FFFFFF",
-    description: "Lujo italiano"
-  },
-  {
-    id: 7,
-    name: "Persol",
-    color: "#92400E", // Brown
-    textColor: "#FFFFFF",
-    description: "Artesanía italiana"
-  },
-  {
-    id: 8,
-    name: "Tom Ford",
-    color: "#374151", // Dark gray
-    textColor: "#FFFFFF",
-    description: "Lujo contemporáneo"
-  }
+  { id: 1, name: "Rayban", logo: "/assets/brands/rayban.png" },
+  { id: 2, name: "Oakley", logo: "/assets/brands/oakley.png" },
+  { id: 3, name: "Vogue", logo: "/assets/brands/vogue.png" },
+  { id: 4, name: "Roots", logo: "/assets/brands/roots.png" },
+  { id: 5, name: "Cima", logo: "/assets/brands/cima.png" },
+  { id: 6, name: "Armani Exchange", logo: "/assets/brands/armani-exchange.png" },
+  { id: 7, name: "Prüne", logo: "/assets/brands/prune.png" },
+  { id: 8, name: "Mistral", logo: "/assets/brands/mistral.png" },
+  { id: 9, name: "Optitech", logo: "/assets/brands/optitech.png" },
+  { id: 10, name: "UnionPacific", logo: "/assets/brands/up.png" },
+  { id: 11, name: "Jean Monnier", logo: "/assets/brands/jean-monnier.png" },
+  { id: 12, name: "Paul Riviere", logo: "/assets/brands/paul-riviere.png" },
+  { id: 13, name: "Orbital", logo: "/assets/brands/orbital.png" },
+  { id: 14, name: "Daniel Cassin", logo: "/assets/brands/daniel-cassin.png" },
+  { id: 15, name: "Reef", logo: "/assets/brands/reef.png" },
+  { id: 16, name: "Nakyma", logo: "/assets/brands/nakyma.png" },
+  { id: 17, name: "Moorea", logo: "/assets/brands/moorea.png" },
+  { id: 18, name: "Ay Not Dead", logo: "/assets/brands/ay-not-dead.png" },
+  { id: 19, name: "Stetson", logo: "/assets/brands/stetson.png" },
+  { id: 20, name: "Tiffany", logo: "/assets/brands/tiffany.png" },
+  { id: 21, name: "Prototype", logo: "/assets/brands/prototype.png" },
+  { id: 22, name: "Sophia Loren", logo: "/assets/brands/sophia-loren.png" }
 ];
 
 export const mockCompanyInfo = {
   name: "Óptica Villalba",
-  tagline: "Calidad Visual Premium",
+  tagline: "Calidad Visual",
   description: "Elevar su estándar de vida, maximizando su calidad visual, proponiéndole siempre los más avanzados productos con la más alta calidad.",
   address: "Av. Las Heras 3751, Palermo, Buenos Aires",
   phone: "+54 11 6415-6306",
@@ -104,7 +70,6 @@ export const mockCompanyInfo = {
     "Lentes Recetados",
     "Gafas de Sol",
     "Lentes de Contacto",
-    "Consultas Optométricas",
     "Reparaciones",
     "Ajustes Personalizados"
   ],

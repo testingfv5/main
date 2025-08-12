@@ -104,18 +104,22 @@ const ContentPage = () => {
         updatesBySection[section][key] = value;
       });
 
-      // Send bulk update
-      await axios.put('/api/admin/content/bulk-update', updatesBySection);
-      
+      // Send updates for each section
+      for (const [section, updates] of Object.entries(updatesBySection)) {
+        await axios.put(`/api/admin/content/sections/${section}`, updates);
+      }
+
       // Refresh content
       await fetchContent();
+      
+      // Clear changes
       setChanges({});
       setHasChanges(false);
       
-      toast.success('Contenido actualizado exitosamente');
+      toast.success('Contenido guardado exitosamente');
     } catch (error) {
-      console.error('Error saving changes:', error);
-      toast.error('Error guardando cambios');
+      console.error('Error saving content:', error);
+      toast.error('Error guardando contenido');
     } finally {
       setSaving(false);
     }
@@ -129,12 +133,12 @@ const ContentPage = () => {
 
   const initializeDefaults = async () => {
     try {
-      await axios.post('/api/admin/content/initialize-defaults');
+      await axios.post('/api/admin/content/initialize');
       await fetchContent();
-      toast.success('Contenido por defecto inicializado');
+      toast.success('Contenido inicializado con valores por defecto');
     } catch (error) {
-      console.error('Error initializing defaults:', error);
-      toast.error('Error inicializando contenido por defecto');
+      console.error('Error initializing content:', error);
+      toast.error('Error inicializando contenido');
     }
   };
 
@@ -148,125 +152,113 @@ const ContentPage = () => {
 
   const renderField = (section, key, config) => {
     const value = getValue(section, key);
-    const fieldType = typeof value;
-
-    if (Array.isArray(value)) {
-      return renderArrayField(section, key, value, config);
+    
+    switch (config.type) {
+      case 'string':
+        return renderStringField(section, key, value, config);
+      case 'array':
+        return renderArrayField(section, key, value, config);
+      case 'object':
+        return renderObjectField(section, key, value, config);
+      default:
+        return null;
     }
-
-    if (fieldType === 'object') {
-      return renderObjectField(section, key, value, config);
-    }
-
-    return renderStringField(section, key, value, config);
   };
 
   const renderStringField = (section, key, value, config) => (
-    <div key={key} className="mb-4">
-      <label className="label">{key.replace(/_/g, ' ').toUpperCase()}</label>
-      {config?.description && (
-        <p className="text-sm text-gray-500 mb-1">{config.description}</p>
+    <div key={key} className="space-y-2">
+      <label className="block text-sm font-medium text-gray-200">
+        {config.label}
+        {config.required && <span className="text-red-400 ml-1">*</span>}
+      </label>
+      {config.description && (
+        <p className="text-xs text-gray-400">{config.description}</p>
       )}
-      {key.includes('description') || key.includes('text') ? (
+      {config.type === 'textarea' ? (
         <textarea
-          rows={3}
-          className="input"
           value={value}
           onChange={(e) => handleInputChange(section, key, e.target.value)}
+          rows={config.rows || 3}
+          className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder={config.placeholder}
         />
       ) : (
         <input
           type="text"
-          className="input"
           value={value}
           onChange={(e) => handleInputChange(section, key, e.target.value)}
+          className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder={config.placeholder}
         />
       )}
     </div>
   );
 
   const renderArrayField = (section, key, value, config) => (
-    <div key={key} className="mb-6">
-      <label className="label">{key.replace(/_/g, ' ').toUpperCase()}</label>
-      {config?.description && (
-        <p className="text-sm text-gray-500 mb-2">{config.description}</p>
+    <div key={key} className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-200">
+          {config.label}
+          {config.required && <span className="text-red-400 ml-1">*</span>}
+        </label>
+        <button
+          type="button"
+          onClick={() => addArrayItem(section, key, config.defaultItem || '')}
+          className="inline-flex items-center px-3 py-1 border border-gray-600 rounded-md text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Agregar
+        </button>
+      </div>
+      {config.description && (
+        <p className="text-xs text-gray-400">{config.description}</p>
       )}
-      
-      <div className="space-y-3">
+      <div className="space-y-2">
         {value.map((item, index) => (
-          <div key={index} className="flex gap-2">
-            {typeof item === 'string' ? (
-              <input
-                type="text"
-                className="input flex-1"
-                value={item}
-                onChange={(e) => handleArrayChange(section, key, index, e.target.value)}
-              />
-            ) : (
-              <div className="flex-1 space-y-2 p-3 border border-gray-200 rounded-md">
-                {Object.entries(item).map(([itemKey, itemValue]) => (
-                  <div key={itemKey}>
-                    <label className="text-xs text-gray-500">{itemKey}</label>
-                    <input
-                      type="text"
-                      className="input"
-                      value={itemValue}
-                      onChange={(e) => handleArrayChange(section, key, index, {
-                        ...item,
-                        [itemKey]: e.target.value
-                      })}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+          <div key={index} className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={item}
+              onChange={(e) => handleArrayChange(section, key, index, e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder={config.placeholder}
+            />
             <button
               type="button"
               onClick={() => removeArrayItem(section, key, index)}
-              className="btn btn-danger px-3"
+              className="inline-flex items-center px-2 py-2 border border-red-600 rounded-md text-xs font-medium text-red-400 bg-gray-700 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
-              ×
+              Eliminar
             </button>
           </div>
         ))}
-        
-        <button
-          type="button"
-          onClick={() => {
-            const defaultItem = typeof value[0] === 'string' 
-              ? '' 
-              : typeof value[0] === 'object' 
-                ? Object.keys(value[0]).reduce((acc, k) => ({ ...acc, [k]: '' }), {})
-                : '';
-            addArrayItem(section, key, defaultItem);
-          }}
-          className="btn btn-secondary text-sm"
-        >
-          + Agregar elemento
-        </button>
       </div>
     </div>
   );
 
   const renderObjectField = (section, key, value, config) => (
-    <div key={key} className="mb-6">
-      <label className="label">{key.replace(/_/g, ' ').toUpperCase()}</label>
-      {config?.description && (
-        <p className="text-sm text-gray-500 mb-2">{config.description}</p>
+    <div key={key} className="space-y-3">
+      <label className="block text-sm font-medium text-gray-200">
+        {config.label}
+        {config.required && <span className="text-red-400 ml-1">*</span>}
+      </label>
+      {config.description && (
+        <p className="text-xs text-gray-400">{config.description}</p>
       )}
-      
-      <div className="space-y-3 p-4 border border-gray-200 rounded-md">
-        {Object.entries(value).map(([objKey, objValue]) => (
-          <div key={objKey}>
-            <label className="text-sm text-gray-600">{objKey}</label>
+      <div className="border border-gray-600 rounded-md p-4 bg-gray-700">
+        {Object.entries(config.fields).map(([fieldKey, fieldConfig]) => (
+          <div key={fieldKey} className="mb-3 last:mb-0">
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              {fieldConfig.label}
+            </label>
             <input
               type="text"
-              className="input"
-              value={objValue}
-              onChange={(e) => handleInputChange(section, key, {
-                ...value,
-                [objKey]: e.target.value
-              })}
+              value={value?.[fieldKey] || ''}
+              onChange={(e) => {
+                const newValue = { ...value, [fieldKey]: e.target.value };
+                handleInputChange(section, key, newValue);
+              }}
+              className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-600 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              placeholder={fieldConfig.placeholder}
             />
           </div>
         ))}
@@ -283,111 +275,100 @@ const ContentPage = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
+      <div className="border-b border-gray-700 pb-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Contenido</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Edita el contenido de todas las secciones de tu sitio web
+            <h1 className="text-3xl font-bold text-white">Contenido</h1>
+            <p className="mt-2 text-sm text-gray-400">
+              Gestiona el contenido de tu sitio web
             </p>
           </div>
-          
           <div className="flex space-x-3">
-            {Object.keys(sections).length === 0 && (
-              <button
-                onClick={initializeDefaults}
-                className="btn btn-secondary"
-              >
-                Inicializar Contenido
-              </button>
-            )}
-            
+            <button
+              onClick={initializeDefaults}
+              className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Inicializar
+            </button>
             {hasChanges && (
               <>
                 <button
                   onClick={discardChanges}
-                  className="btn btn-secondary"
+                  className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
                   Descartar
                 </button>
                 <button
                   onClick={saveChanges}
                   disabled={saving}
-                  className="btn btn-primary"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  {saving ? <LoadingSpinner size="sm" /> : 'Guardar Cambios'}
+                  {saving ? <LoadingSpinner size="sm" /> : 'Guardar'}
                 </button>
               </>
             )}
           </div>
         </div>
-        
-        {hasChanges && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2" />
-            <span className="text-sm text-yellow-700">
-              Tienes cambios sin guardar. No olvides guardar antes de salir.
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Content Tabs */}
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20 p-1 mb-6">
-          {sectionTabs.map((tab) => (
-            <Tab
-              key={tab.key}
-              className={({ selected }) =>
-                `w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700 ${
-                  selected
-                    ? 'bg-white shadow'
-                    : 'text-blue-100 hover:bg-white/[0.12] hover:text-white'
-                }`
-              }
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <tab.icon className="h-4 w-4" />
-                <span>{tab.name}</span>
-              </div>
-            </Tab>
-          ))}
-        </Tab.List>
-
-        <Tab.Panels>
-          {sectionTabs.map((tab) => (
-            <Tab.Panel key={tab.key} className="card">
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                  <tab.icon className="h-5 w-5 mr-2" />
-                  {tab.name}
-                </h3>
-                <p className="text-sm text-gray-500">{tab.description}</p>
-              </div>
-
-              <div className="space-y-4">
+      <div className="card">
+        <Tab.Group>
+          <Tab.List className="flex space-x-1 rounded-xl bg-gray-700 p-1">
+            {sectionTabs.map((tab) => (
+              <Tab
+                key={tab.key}
+                className={({ selected }) =>
+                  `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+                   ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2
+                   ${selected
+                     ? 'bg-blue-600 text-white shadow'
+                     : 'text-gray-300 hover:bg-gray-600 hover:text-white'
+                   }`
+                }
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.name}</span>
+                </div>
+              </Tab>
+            ))}
+          </Tab.List>
+          <Tab.Panels className="mt-6">
+            {sectionTabs.map((tab) => (
+              <Tab.Panel
+                key={tab.key}
+                className="space-y-6"
+              >
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium text-white">{tab.name}</h3>
+                  <p className="text-sm text-gray-400">{tab.description}</p>
+                </div>
+                
                 {sections[tab.key] ? (
-                  Object.entries(sections[tab.key]).map(([key, config]) =>
-                    renderField(tab.key, key, config)
-                  )
+                  <div className="space-y-6">
+                    {Object.entries(sections[tab.key]).map(([key, config]) => 
+                      renderField(tab.key, key, config)
+                    )}
+                  </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">
-                      Sin contenido para {tab.name}
+                  <div className="text-center py-8">
+                    <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-gray-500" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-300">
+                      No hay configuración disponible
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      Inicializa el contenido por defecto para comenzar.
+                      Inicializa el contenido para comenzar
                     </p>
                   </div>
                 )}
-              </div>
-            </Tab.Panel>
-          ))}
-        </Tab.Panels>
-      </Tab.Group>
+              </Tab.Panel>
+            ))}
+          </Tab.Panels>
+        </Tab.Group>
+      </div>
     </div>
   );
 };
