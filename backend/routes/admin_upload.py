@@ -23,21 +23,25 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 (UPLOAD_DIR / "general").mkdir(exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_DIMENSION = 2048  # Max width/height in pixels
 
-def validate_image(file: UploadFile) -> bool:
-    """Validate uploaded image file"""
-    # Check file extension
+def validate_image_metadata(file: UploadFile) -> bool:
+    """Validate uploaded image basic metadata (extension only)."""
     file_ext = Path(file.filename).suffix.lower()
     if file_ext not in ALLOWED_EXTENSIONS:
         return False
-    
-    # Check file size
-    if file.size > MAX_FILE_SIZE:
-        return False
-    
     return True
+
+def validate_mime_type(file: UploadFile) -> bool:
+    """Validate request-declared MIME and real image open."""
+    try:
+        if file.content_type not in ALLOWED_MIME:
+            return False
+        return True
+    except Exception:
+        return False
 
 def optimize_image(image_content: bytes, max_width: int = 1200, quality: int = 85) -> bytes:
     """Optimize image for web use"""
@@ -79,8 +83,8 @@ async def upload_image(
 ):
     """Upload and optimize image file"""
     
-    # Validate file
-    if not validate_image(file):
+    # Validate file metadata (extension) and MIME
+    if not validate_image_metadata(file) or not validate_mime_type(file):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid file. Allowed: {', '.join(ALLOWED_EXTENSIONS)}. Max size: 5MB"
@@ -89,6 +93,13 @@ async def upload_image(
     try:
         # Read file content
         content = await file.read()
+
+        # Enforce max size after read
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File too large. Max size is 5MB"
+            )
         
         # Optimize image if requested
         if optimize:
@@ -162,7 +173,7 @@ async def upload_multiple_images(
     
     for file in files:
         try:
-            if not validate_image(file):
+            if not validate_image_metadata(file) or not validate_mime_type(file):
                 errors.append({
                     "filename": file.filename,
                     "error": f"Invalid file format or size"
@@ -171,6 +182,12 @@ async def upload_multiple_images(
             
             # Read and process file
             content = await file.read()
+            if len(content) > MAX_FILE_SIZE:
+                errors.append({
+                    "filename": file.filename,
+                    "error": "File too large. Max size is 5MB"
+                })
+                continue
             
             if optimize:
                 content = optimize_image(content)

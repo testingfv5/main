@@ -15,5 +15,89 @@
     </head>
     <body>
         <div id="root"></div>
+        <script>
+            (function () {
+                function computeDocumentHeight() {
+                    var doc = document;
+                    var body = doc.body;
+                    var html = doc.documentElement;
+                    var height = Math.max(
+                        body ? body.scrollHeight : 0,
+                        html ? html.scrollHeight : 0,
+                        body ? body.offsetHeight : 0,
+                        html ? html.offsetHeight : 0,
+                        body ? body.clientHeight : 0,
+                        html ? html.clientHeight : 0,
+                        (body && body.getBoundingClientRect ? body.getBoundingClientRect().height : 0),
+                        (html && html.getBoundingClientRect ? html.getBoundingClientRect().height : 0)
+                    );
+                    return height;
+                }
+
+                function postHeight() {
+                    try {
+                        var height = computeDocumentHeight();
+                        window.parent && window.parent.postMessage({ type: 'OV_IFRAME_HEIGHT', height: height }, '*');
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+
+                var debounced;
+                function requestPostHeight() {
+                    if (debounced) cancelAnimationFrame(debounced);
+                    debounced = requestAnimationFrame(postHeight);
+                }
+
+                window.addEventListener('load', requestPostHeight);
+                window.addEventListener('resize', requestPostHeight);
+                document.addEventListener('readystatechange', requestPostHeight);
+                var observer = new MutationObserver(requestPostHeight);
+                observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+
+                // Initial send
+                requestPostHeight();
+
+                // Listen to parent commands (preview integration)
+                window.addEventListener('message', function (event) {
+                    var data = event.data || {};
+                    if (data && typeof data === 'object') {
+                        if (data.type === 'OV_REQUEST_HEIGHT') {
+                            requestPostHeight();
+                        }
+                        if (data.type === 'OV_DISABLE_SCROLL') {
+                            try {
+                                var disable = !!data.disable;
+                                var html = document.documentElement;
+                                var body = document.body;
+                                if (disable) {
+                                    html && (html.style.overflow = 'hidden');
+                                    body && (body.style.overflow = 'hidden');
+                                    var prevent = function (e) { e.preventDefault(); };
+                                    window.__ov_no_scroll_handlers = window.__ov_no_scroll_handlers || [];
+                                    var handlers = window.__ov_no_scroll_handlers;
+                                    if (handlers.length === 0) {
+                                        handlers.push(['wheel', prevent, { passive: false }]);
+                                        handlers.push(['touchmove', prevent, { passive: false }]);
+                                        handlers.push(['keydown', function (e) {
+                                            var keys = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End','Space'];
+                                            if (keys.indexOf(e.key) !== -1) { e.preventDefault(); }
+                                        }, false]);
+                                        handlers.forEach(function (h) { window.addEventListener(h[0], h[1], h[2]); });
+                                    }
+                                } else {
+                                    html && (html.style.overflow = '');
+                                    body && (body.style.overflow = '');
+                                    if (window.__ov_no_scroll_handlers) {
+                                        window.__ov_no_scroll_handlers.forEach(function (h) { window.removeEventListener(h[0], h[1], h[2]); });
+                                        window.__ov_no_scroll_handlers = [];
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>

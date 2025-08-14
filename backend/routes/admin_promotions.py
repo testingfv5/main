@@ -9,6 +9,16 @@ import os
 import shutil
 from pathlib import Path
 
+# Optional email notifications on promotion events
+try:
+    from ..email_service import send_promotion_notification
+except Exception:
+    # If relative import fails (when executed as module), try absolute path
+    try:
+        from email_service import send_promotion_notification
+    except Exception:
+        send_promotion_notification = None
+
 router = APIRouter(prefix="/api/admin/promotions", tags=["Admin Promotions"])
 
 # Create uploads directory if it doesn't exist
@@ -77,6 +87,17 @@ async def create_promotion(
         "details": {"title": promotion_obj.title},
         "timestamp": datetime.utcnow()
     })
+
+    # Notify via email (best-effort)
+    if send_promotion_notification:
+        try:
+            await send_promotion_notification(
+                db=db,
+                event="created",
+                promotion=promotion_obj.dict()
+            )
+        except Exception:
+            pass
     
     return promotion_obj
 
@@ -126,6 +147,17 @@ async def update_promotion(
         "details": {"changes": list(update_data.keys())},
         "timestamp": datetime.utcnow()
     })
+
+    # Notify via email (best-effort)
+    if send_promotion_notification and any(k in update_data for k in ["title", "discount", "start_date", "end_date", "is_active"]):
+        try:
+            await send_promotion_notification(
+                db=db,
+                event="updated",
+                promotion=updated_promotion
+            )
+        except Exception:
+            pass
     
     return Promotion(**updated_promotion)
 
@@ -163,6 +195,17 @@ async def delete_promotion(
         "details": {"title": promotion.get("title")},
         "timestamp": datetime.utcnow()
     })
+
+    # Notify via email (best-effort)
+    if send_promotion_notification:
+        try:
+            await send_promotion_notification(
+                db=db,
+                event="deleted",
+                promotion=promotion
+            )
+        except Exception:
+            pass
     
     return {"message": "Promotion deleted successfully"}
 

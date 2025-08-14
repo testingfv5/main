@@ -58,7 +58,7 @@ def start_backend():
         
         # Verificar si el proceso sigue ejecutándose
         if backend_process.poll() is None:
-            print("✅ Servidor backend iniciado en http://localhost:8003")
+            print("✅ Servidor backend iniciado en http://localhost:8001")
             return True
         else:
             print("❌ Error iniciando el servidor backend")
@@ -147,7 +147,7 @@ def main():
     print("=" * 50)
     print("📋 URLs de acceso:")
     print("   • Panel Administrativo: http://localhost:3001")
-    print("   • API Backend: http://localhost:8003")
+    print("   • API Backend: http://localhost:8001")
     print()
     print("🔐 Credenciales de acceso:")
     print("   • Usuario: admin")

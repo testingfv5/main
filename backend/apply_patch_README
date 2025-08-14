@@ -1,0 +1,52 @@
+import os
+from typing import Dict, Any
+from email.message import EmailMessage
+import smtplib
+from datetime import datetime
+
+
+SMTP_HOST = os.environ.get("SMTP_HOST")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER")
+SMTP_PASS = os.environ.get("SMTP_PASS")
+PROMO_MAIL_TO = os.environ.get("PROMO_MAIL_TO")  # comma-separated
+PROMO_MAIL_FROM = os.environ.get("PROMO_MAIL_FROM", SMTP_USER or "no-reply@localhost")
+
+
+def _enabled() -> bool:
+    return all([SMTP_HOST, SMTP_USER, SMTP_PASS, PROMO_MAIL_TO])
+
+
+async def send_promotion_notification(db, event: str, promotion: Dict[str, Any]):
+    """Send a basic email notification about promotion events.
+    Best-effort: if SMTP is not configured, this is a no-op.
+    """
+    if not _enabled():
+        return
+
+    title = promotion.get("title", "Promoción")
+    subject = f"[Óptica Villalba] Promoción {event}: {title}"
+    lines = [
+        f"Evento: {event}",
+        f"Título: {title}",
+        f"Descuento: {promotion.get('discount')}",
+        f"Activa: {promotion.get('is_active')}",
+        f"Inicio: {promotion.get('start_date')}",
+        f"Fin: {promotion.get('end_date')}",
+        f"Fecha: {datetime.utcnow().isoformat()} UTC",
+    ]
+
+    body = "\n".join([str(x) for x in lines])
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = PROMO_MAIL_FROM
+    msg["To"] = ",".join([a.strip() for a in PROMO_MAIL_TO.split(",") if a.strip()])
+    msg.set_content(body)
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASS)
+        server.send_message(msg)
+
+

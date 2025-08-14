@@ -1,8 +1,9 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -19,6 +20,7 @@ from routes.admin_brands import router as admin_brands_router
 from routes.admin_content import router as admin_content_router
 from routes.admin_upload import router as admin_upload_router
 from routes.public_api import router as public_api_router
+from routes.admin_system import router as admin_system_router
 from scheduler import start_scheduler
 
 ROOT_DIR = Path(__file__).parent
@@ -58,6 +60,10 @@ async def lifespan(app: FastAPI):
     await stop_scheduler()
     client.close()
     logger.info("API shutdown complete")
+
+# Security/config flags
+ENVIRONMENT = os.environ.get("ENVIRONMENT", os.environ.get("ENV", "development")).lower()
+FORCE_HTTPS = os.environ.get("FORCE_HTTPS", "false").lower() in {"1", "true", "yes"}
 
 # Create the main app without a prefix
 app = FastAPI(title="Óptica Villalba API", version="1.0.0", lifespan=lifespan)
@@ -99,19 +105,46 @@ app.include_router(admin_brands_router)  # Admin brands
 app.include_router(admin_content_router)  # Admin content management
 app.include_router(admin_upload_router)  # Admin file uploads
 app.include_router(public_api_router)  # Public API endpoints
+app.include_router(admin_system_router)  # Admin system (logs, backups)
 
 # Create uploads directory and serve static files
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# CORS configuration from env (comma-separated)
+raw_origins = os.environ.get(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001"
+)
+ALLOWED_ORIGINS = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Optionally force HTTPS (useful behind reverse proxy)
+if FORCE_HTTPS or ENVIRONMENT == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # Basic hardening headers
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    # Apply HSTS only if https
+    if (request.url.scheme or "").lower() == "https":
+        response.headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+    # Minimal CSP (relaxed for dev); tighten in production as needed
+    if ENVIRONMENT == "production":
+        response.headers.setdefault("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'")
+    return response
 
 if __name__ == "__main__":
     import uvicorn

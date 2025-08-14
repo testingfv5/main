@@ -20,9 +20,10 @@ router = APIRouter(prefix="/api/admin/auth", tags=["Admin Authentication"])
 async def login_step1(user_login: UserLogin, request: Request):
     """First step of login - verify username and password"""
     
-    # Rate limiting by IP
+    # Rate limiting by IP and IP+username combo
     client_ip = request.client.host
-    if not check_rate_limit(client_ip):
+    identifier = f"{client_ip}:{user_login.username.lower()}"
+    if not check_rate_limit(client_ip) or not check_rate_limit(identifier):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many login attempts. Please try again later."
@@ -31,7 +32,9 @@ async def login_step1(user_login: UserLogin, request: Request):
     # Get user
     user = await AuthService.get_user_by_username(user_login.username)
     if not user:
+        # record both IP and combo
         record_login_attempt(client_ip)
+        record_login_attempt(identifier)
         await AuthService.log_user_login(user_login.username, client_ip, False)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,6 +44,7 @@ async def login_step1(user_login: UserLogin, request: Request):
     # Verify password
     if not AuthService.verify_password(user_login.password, user["password_hash"]):
         record_login_attempt(client_ip)
+        record_login_attempt(identifier)
         await AuthService.log_user_login(user_login.username, client_ip, False)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,29 +60,12 @@ async def login_step1(user_login: UserLogin, request: Request):
     
     # Check MFA status
     if not user.get("mfa_enabled", False):
-        # For development, allow admin user to login without MFA
-        if user_login.username == "admin":
-            # Create access token for admin without MFA
-            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = AuthService.create_access_token(
-                data={"sub": user_login.username}, expires_delta=access_token_expires
-            )
-            
-            # Update last login
-            await AuthService.log_user_login(user_login.username, client_ip, True)
-            
-            return {
-                "access_token": access_token,
-                "token_type": "bearer",
-                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-                "message": "Login successful (MFA disabled for development)"
-            }
-        else:
-            return {
-                "requires_mfa_setup": True,
-                "username": user_login.username,
-                "message": "MFA setup required"
-            }
+        # Require MFA setup for all users (no bypass in production)
+        return {
+            "requires_mfa_setup": True,
+            "username": user_login.username,
+            "message": "MFA setup required"
+        }
     
     return {
         "requires_mfa": True,
@@ -158,6 +145,14 @@ async def verify_mfa(user_mfa: UserMFA, request: Request):
     """Verify MFA code and return JWT token"""
     
     client_ip = request.client.host
+    identifier = f"{client_ip}:{user_mfa.username.lower()}"
+
+    # Rate limiting check for MFA step as well
+    if not check_rate_limit(client_ip) or not check_rate_limit(identifier):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Please try again later."
+        )
     
     # Get user
     user = await AuthService.get_user_by_username(user_mfa.username)
@@ -168,9 +163,10 @@ async def verify_mfa(user_mfa: UserMFA, request: Request):
             detail="MFA not enabled for this user"
         )
     
-    # Verify MFA code
+    # Verify MFA code (track attempts by IP+username composite)
     if not AuthService.verify_mfa_token(user["mfa_secret"], user_mfa.mfa_code):
         record_login_attempt(client_ip)
+        record_login_attempt(identifier)
         await AuthService.log_user_login(user_mfa.username, client_ip, False)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Tab } from '@headlessui/react';
-import {
-  DocumentTextIcon,
-  HomeIcon,
-  InformationCircleIcon,
-  CogIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useRef } from 'react';
+import { ExclamationTriangleIcon, ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -17,37 +10,25 @@ const ContentPage = () => {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [changes, setChanges] = useState({});
+  const [previewUrl] = useState(process.env.REACT_APP_FRONTEND_URL || window.location.origin.replace('3001','3000'));
+  const [viewMode, setViewMode] = useState('desktop'); // 'desktop' | 'mobile'
+  const previewContainerRef = useRef(null);
+  const iframeRef = useRef(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const sectionTabs = [
-    {
-      name: 'Header',
-      key: 'header',
-      icon: HomeIcon,
-      description: 'Información de cabecera del sitio'
-    },
-    {
-      name: 'Info',
-      key: 'info', 
-      icon: InformationCircleIcon,
-      description: 'Sección de información y servicios'
-    },
-    {
-      name: 'Footer',
-      key: 'footer',
-      icon: DocumentTextIcon,
-      description: 'Pie de página y enlaces'
-    },
-    {
-      name: 'General',
-      key: 'general',
-      icon: CogIcon,
-      description: 'Configuración general del sitio'
-    }
-  ];
+  const DESKTOP_BASE_WIDTH = 1920;
+  const DESKTOP_BASE_HEIGHT = 1080;
+  const MOBILE_BASE_WIDTH = 412;
+  const MOBILE_BASE_HEIGHT = 915;
+
+  // Editamos solo texto por secciones visibles del sitio (sin el bloque de colores/general)
+  const sectionOrder = ['header','info','footer'];
 
   useEffect(() => {
     fetchContent();
   }, []);
+
+  // Mantenemos la preview con scroll interno; no enviamos mensajes al iframe
 
   const fetchContent = async () => {
     try {
@@ -61,6 +42,8 @@ const ContentPage = () => {
       setLoading(false);
     }
   };
+
+  // Quitamos el escalado y el ajuste automático de altura
 
   const handleInputChange = (section, key, value) => {
     const changeKey = `${section}.${key}`;
@@ -104,10 +87,8 @@ const ContentPage = () => {
         updatesBySection[section][key] = value;
       });
 
-      // Send updates for each section
-      for (const [section, updates] of Object.entries(updatesBySection)) {
-        await axios.put(`/api/admin/content/sections/${section}`, updates);
-      }
+      // Send a single bulk update request
+      await axios.put('/api/admin/content/bulk-update', updatesBySection);
 
       // Refresh content
       await fetchContent();
@@ -117,6 +98,8 @@ const ContentPage = () => {
       setHasChanges(false);
       
       toast.success('Contenido guardado exitosamente');
+      // Forzar recarga de la vista previa para evitar caché
+      setReloadToken(Date.now());
     } catch (error) {
       console.error('Error saving content:', error);
       toast.error('Error guardando contenido');
@@ -133,7 +116,7 @@ const ContentPage = () => {
 
   const initializeDefaults = async () => {
     try {
-      await axios.post('/api/admin/content/initialize');
+      await axios.post('/api/admin/content/initialize-defaults');
       await fetchContent();
       toast.success('Contenido inicializado con valores por defecto');
     } catch (error) {
@@ -150,19 +133,79 @@ const ContentPage = () => {
     return sections[section]?.[key]?.value || '';
   };
 
-  const renderField = (section, key, config) => {
-    const value = getValue(section, key);
-    
-    switch (config.type) {
-      case 'string':
-        return renderStringField(section, key, value, config);
-      case 'array':
-        return renderArrayField(section, key, value, config);
-      case 'object':
-        return renderObjectField(section, key, value, config);
-      default:
-        return null;
+  // Helpers para mostrar SIEMPRE texto editable simple
+  const valueToText = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '';
+      if (typeof value[0] === 'string') return value.join('\n');
+      if (typeof value[0] === 'object' && value[0]) {
+        // Caso típico: [{title, description}]
+        return value
+          .map((it) => [it.title, it.description].filter(Boolean).join(' : '))
+          .join('\n');
+      }
     }
+    if (typeof value === 'object') {
+      // Representación simple clave: valor por línea
+      return Object.entries(value)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('\n');
+    }
+    return String(value);
+  };
+
+  const textToValue = (text, original) => {
+    if (typeof original === 'string') return text;
+    if (Array.isArray(original)) {
+      if (original.length === 0 || typeof original[0] === 'string') {
+        return text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+      }
+      if (typeof original[0] === 'object' && original[0]) {
+        // Parse "titulo : descripcion"
+        return text
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0)
+          .map((line) => {
+            const [title, ...rest] = line.split(':');
+            return { title: (title || '').trim(), description: rest.join(':').trim() };
+          });
+      }
+    }
+    if (typeof original === 'object' && original) {
+      const next = { ...original };
+      text.split('\n').forEach((line) => {
+        const [k, ...rest] = line.split(':');
+        if (k) next[k.trim()] = rest.join(':').trim();
+      });
+      return next;
+    }
+    return text;
+  };
+
+  const renderField = (section, key, config) => {
+    const original = sections[section]?.[key]?.value;
+    const currentValue = getValue(section, key);
+    const text = valueToText(currentValue);
+    const label = config.label || `${section}.${key}`;
+    const description = config.description;
+
+    return (
+      <div key={key} className="space-y-2">
+        <label className="block text-sm font-medium text-gray-200">{label}</label>
+        {description && (
+          <p className="text-xs text-gray-400">{description}</p>
+        )}
+        <textarea
+          value={text}
+          onChange={(e) => handleInputChange(section, key, textToValue(e.target.value, original))}
+          rows={3}
+          className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+    );
   };
 
   const renderStringField = (section, key, value, config) => (
@@ -280,9 +323,9 @@ const ContentPage = () => {
       <div className="border-b border-gray-700 pb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Contenido</h1>
+            <h1 className="text-3xl font-bold text-white">Editar Contenido</h1>
             <p className="mt-2 text-sm text-gray-400">
-              Gestiona el contenido de tu sitio web
+              Editá todo el contenido del sitio con vista previa en vivo
             </p>
           </div>
           <div className="flex space-x-3">
@@ -313,61 +356,82 @@ const ContentPage = () => {
         </div>
       </div>
 
-      {/* Content Tabs */}
-      <div className="card">
-        <Tab.Group>
-          <Tab.List className="flex space-x-1 rounded-xl bg-gray-700 p-1">
-            {sectionTabs.map((tab) => (
-              <Tab
-                key={tab.key}
-                className={({ selected }) =>
-                  `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-                   ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2
-                   ${selected
-                     ? 'bg-blue-600 text-white shadow'
-                     : 'text-gray-300 hover:bg-gray-600 hover:text-white'
-                   }`
-                }
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <tab.icon className="w-4 h-4" />
-                  <span>{tab.name}</span>
-                </div>
-              </Tab>
-            ))}
-          </Tab.List>
-          <Tab.Panels className="mt-6">
-            {sectionTabs.map((tab) => (
-              <Tab.Panel
-                key={tab.key}
-                className="space-y-6"
-              >
-                <div className="mb-4">
-                  <h3 className="text-lg font-medium text-white">{tab.name}</h3>
-                  <p className="text-sm text-gray-400">{tab.description}</p>
-                </div>
-                
-                {sections[tab.key] ? (
-                  <div className="space-y-6">
-                    {Object.entries(sections[tab.key]).map(([key, config]) => 
-                      renderField(tab.key, key, config)
-                    )}
+      {/* Unified editor with live preview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Editor */}
+        <div className="card">
+          {sectionOrder.every((s) => !sections[s]) ? (
+            <div className="text-center py-8">
+              <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-gray-500" />
+              <h3 className="mt-2 text-sm font-medium text-gray-300">No hay configuración disponible</h3>
+              <p className="mt-1 text-sm text-gray-500">Inicializa el contenido para comenzar</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {sectionOrder.map((sectionKey) => (
+                sections[sectionKey] && (
+                  <div key={sectionKey} className="space-y-6">
+                    <h3 className="text-lg font-semibold text-white capitalize">{sectionKey}</h3>
+                    {Object.entries(sections[sectionKey]).map(([key, config]) => (
+                      <div key={`${sectionKey}.${key}`}>
+                        {renderField(sectionKey, key, config)}
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-gray-500" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-300">
-                      No hay configuración disponible
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Inicializa el contenido para comenzar
-                    </p>
-                  </div>
-                )}
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
+                )
+              ))}
+            </div>
+          )}
+        </div>
+
+         {/* Live Preview con selector de modo */}
+         <div className="card p-0 bg-gray-800 border border-gray-700">
+           <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-gray-900">
+             <div className="text-sm text-gray-300">Vista previa</div>
+             <div className="flex items-center gap-2">
+               <button
+                 onClick={() => setViewMode('desktop')}
+                 className={`px-2 py-1 rounded text-xs border ${viewMode==='desktop' ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-800 text-gray-300 border-gray-600'}`}
+               >
+                 <ComputerDesktopIcon className="h-4 w-4 inline mr-1" /> Desktop
+               </button>
+               <button
+                 onClick={() => setViewMode('mobile')}
+                 className={`px-2 py-1 rounded text-xs border ${viewMode==='mobile' ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-800 text-gray-300 border-gray-600'}`}
+               >
+                 <DevicePhoneMobileIcon className="h-4 w-4 inline mr-1" /> Mobile
+               </button>
+               <button onClick={() => window.open(previewUrl, '_blank')} className="btn btn-secondary text-xs">Abrir en pestaña</button>
+             </div>
+          </div>
+           {(() => {
+             const width = viewMode === 'mobile' ? MOBILE_BASE_WIDTH : DESKTOP_BASE_WIDTH;
+             const height = viewMode === 'mobile' ? MOBILE_BASE_HEIGHT : DESKTOP_BASE_HEIGHT;
+             return (
+               <div
+                 ref={previewContainerRef}
+                 className={`w-full flex ${viewMode === 'mobile' ? 'justify-center' : 'justify-start'}`}
+               >
+                 <div
+                   className={`bg-gray-950 border border-gray-700 ${viewMode === 'mobile' ? 'rounded-xl shadow-xl' : ''}`}
+                   style={{ width: `${width}px`, height: `${height}px`, overflow: 'auto' }}
+                 >
+                   <iframe
+                     title="Vista Previa"
+                     src={`${previewUrl}${previewUrl.includes('?') ? '&' : '?'}_=${reloadToken}`}
+                     ref={iframeRef}
+                     width={width}
+                     height={height}
+                     className="border-0 bg-black"
+                     onLoad={() => {
+                       try { iframeRef.current?.contentWindow?.scrollTo(0, 0); } catch {}
+                     }}
+                   />
+                 </div>
+               </div>
+             );
+           })()}
+        </div>
       </div>
     </div>
   );

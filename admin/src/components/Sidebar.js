@@ -12,10 +12,9 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Contenido', href: '/content', icon: DocumentTextIcon },
+  { name: 'Editar Contenido', href: '/content', icon: DocumentTextIcon },
   { name: 'Promociones', href: '/promotions', icon: MegaphoneIcon },
   { name: 'Marcas', href: '/brands', icon: TagIcon },
-  { name: 'Preview', href: '/preview', icon: EyeIcon },
   { name: 'Configuración', href: '/settings', icon: CogIcon },
 ];
 

@@ -12,7 +12,6 @@ import DashboardPage from './pages/DashboardPage';
 import ContentPage from './pages/ContentPage';
 import PromotionsPage from './pages/PromotionsPage';
 import BrandsPage from './pages/BrandsPage';
-import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
@@ -55,7 +54,6 @@ function App() {
             <Route path="content" element={<ContentPage />} />
             <Route path="promotions" element={<PromotionsPage />} />
             <Route path="brands" element={<BrandsPage />} />
-            <Route path="preview" element={<PreviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           
